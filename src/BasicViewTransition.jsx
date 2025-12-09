@@ -1,27 +1,43 @@
 // BasicViewTransition.js
-// NOTE:
-// React's experimental `ViewTransition` component is currently only available
-// in the Canary/Experimental builds. In this sample we provide a tiny local
-// shim so the code compiles and the structure matches your lesson.
-// If you later switch to React Canary, you can:
-//   1) remove the local ViewTransition below, and
-//   2) import { ViewTransition } from 'react';
-import React, { useState, startTransition } from 'react'
 
-// Simple shim: just renders children. No real animation logic here.
-function ViewTransition({ children }) {
-  return <>{children}</>
-}
+import React, { ViewTransition, useEffect, useState, startTransition } from 'react'
 
 export default function BasicViewTransition() {
   const [visible, setVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [phase, setPhase] = useState('idle') // idle | visible | exiting
+
+  // Keep the panel in the DOM long enough to animate out when hiding.
+  useEffect(() => {
+    if (visible) {
+      setMounted(true)
+      // Defer so the hidden styles apply before we promote to visible.
+      const id = requestAnimationFrame(() => setPhase('visible'))
+      return () => cancelAnimationFrame(id)
+    }
+
+    if (mounted) {
+      setPhase('exiting')
+      const timeout = setTimeout(() => {
+        setMounted(false)
+        setPhase('idle')
+      }, 260)
+      return () => clearTimeout(timeout)
+    }
+  }, [visible, mounted])
 
   function toggle() {
-    // We wrap the visibility toggle in startTransition so React can
-    // treat it as a low-priority state update, like in the docs.
-    startTransition(() => {
-      setVisible(prev => !prev)
-    })
+    const updateVisibility = () => setVisible(prev => !prev)
+
+    // If the browser supports View Transitions (Chrome 126+), trigger one
+    // around the state flip. Fallback keeps the React transition only.
+    if (typeof document !== 'undefined' && document.startViewTransition) {
+      document.startViewTransition(() => {
+        startTransition(updateVisibility)
+      })
+    } else {
+      startTransition(updateVisibility)
+    }
   }
 
   return (
@@ -30,9 +46,17 @@ export default function BasicViewTransition() {
         {visible ? 'Hide panel' : 'Show panel'}
       </button>
 
-      {visible ? (
+      {mounted ? (
         <ViewTransition>
-          <div className="panel">
+          <div
+            className={[
+              'panel',
+              phase === 'visible' && 'is-visible',
+              phase === 'exiting' && 'is-exiting',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             <h2>Animated Panel</h2>
             <p>
               This panel appears and disappears with a smooth CSS transition.
