@@ -75,8 +75,8 @@ code {
   opacity: 0;
   transform: scale(0.97) translateY(10px);
   filter: blur(4px);
-  transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease,
-    box-shadow 260ms ease;
+  transition: opacity 5200ms ease, transform 520ms ease, filter 520ms ease,
+    box-shadow 5200ms ease;
 }
 
 .panel.is-visible {
@@ -123,11 +123,11 @@ code {
   }
 
   ::view-transition-old(basic-panel) {
-    animation: fadeScaleOut 180ms ease forwards;
+    animation: fadeScaleOut 5200ms ease forwards;
   }
 
   ::view-transition-new(basic-panel) {
-    animation: fadeScaleIn 220ms ease forwards;
+    animation: fadeScaleIn 5200ms ease forwards;
   }
 
   @keyframes fadeScaleOut {

@@ -6,6 +6,7 @@ export default function BasicViewTransition() {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [phase, setPhase] = useState('idle') // idle | visible | exiting
+  const EXIT_DURATION = 5200 // keep in sync with CSS transition timing
 
   // Keep the panel in the DOM long enough to animate out when hiding.
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function BasicViewTransition() {
       const timeout = setTimeout(() => {
         setMounted(false)
         setPhase('idle')
-      }, 260)
+      }, EXIT_DURATION)
       return () => clearTimeout(timeout)
     }
   }, [visible, mounted])
